@@ -24,7 +24,7 @@ public sealed class TmdbProviderPlugin(IPluginSettingsStore settingsStore) :
         Id: PluginId,
         Name: "TMDB",
         Version: "0.1.0",
-        Author: "Nobugsgiven",
+        Author: "MediaPager",
         Description: "The Movie Database metadata and search provider for movies and TV shows.");
 
     public IReadOnlyList<PluginSettingDefinition> Settings { get; } =
@@ -249,8 +249,14 @@ public sealed class TmdbProviderPlugin(IPluginSettingsStore settingsStore) :
     private static bool TryParseId(string externalId, out long id) =>
         long.TryParse(externalId, out id) && id > 0;
 
-    private async Task<string?> ApiKeyAsync(CancellationToken cancellationToken) =>
-        (await settingsStore.GetAsync(PluginKey, ApiKeySetting, cancellationToken))?.Trim();
+    private async Task<string?> ApiKeyAsync(CancellationToken cancellationToken)
+    {
+        var configured = await settingsStore.GetAsync(PluginKey, ApiKeySetting, cancellationToken);
+        if (!string.IsNullOrWhiteSpace(configured))
+            return configured.Trim();
+
+        return Environment.GetEnvironmentVariable("MEDIAPAGER_TMDB_API_KEY")?.Trim();
+    }
 
     private async Task<string> ImageBaseAsync(CancellationToken cancellationToken) =>
         (await settingsStore.GetAsync(PluginKey, ImageBaseSetting, cancellationToken)) is { Length: > 0 } value
