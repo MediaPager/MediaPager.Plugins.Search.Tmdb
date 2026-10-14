@@ -51,6 +51,8 @@ public sealed class TmdbProviderPlugin(IPluginSettingsStore settingsStore) :
         var query = request.Query?.Trim();
         if (string.IsNullOrWhiteSpace(query))
             return [];
+        if (request.CatalogId is not null)
+            return [];
         if (request.SupportedStreamKinds is { Count: 0 })
             return [];
 
